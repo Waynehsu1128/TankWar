@@ -13,9 +13,17 @@ public class GameClient extends JComponent {
 
     private List<Tank> enemyTanks;
 
+    private List<Wall> walls;
+
     private GameClient() {
         this.playerTank = new Tank(400, 100, Direction.DOWN);
         this.enemyTanks = new ArrayList<>(12);
+        this.walls = Arrays.asList(
+                new Wall(200, 140, true, 15),
+                new Wall(200, 540, true, 15),
+                new Wall(100, 80, false, 15),
+                new Wall(700, 80, false, 15)
+        );
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 4; j++) {
                 this.enemyTanks.add(new Tank(200 + j * 80, 400 + 40 * i, true, Direction.UP));
@@ -26,10 +34,15 @@ public class GameClient extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
-       playerTank.draw(g);
-       for (Tank tank : enemyTanks) {
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, 800, 600);
+        playerTank.draw(g);
+        for (Tank tank : enemyTanks) {
            tank.draw(g);
-       }
+        }
+        for (Wall wall : walls) {
+           wall.draw(g);
+        }
     }
 
     public static void main(String[] args) {
