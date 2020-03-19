@@ -1,31 +1,14 @@
 package waynehsu.tankwar;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class Tank {
+ class Tank {
 
     private int x;
     private int y;
 
     private boolean enemy;
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public int getY() {
-        return y;
-    }
 
     private Direction direction;
 
@@ -41,7 +24,7 @@ public class Tank {
     }
 
     // 移動方向
-    void move() {
+    private void move() {
         if (this.stopped) {
             return;
         }
@@ -102,10 +85,12 @@ public class Tank {
     }
 
     void draw(Graphics g) {
+        int oldX = x;
+        int oldY = y;
         this.determineDirection();
         this.move();
 
-        // 對 x y 進行檢查
+        // 對 x y 進行檢查 有沒有超出視窗
         if (x < 0) {
             x = 0;
         } else if (x > (800 - getImage().getWidth(null))) {
@@ -117,13 +102,36 @@ public class Tank {
             y = 600 - getImage().getHeight(null);
         }
 
-        g.drawImage(this.getImage(), this.getX(), this.getY(), null);
+        // tank interact with wall
+        Rectangle rec = this.getRectangle();
+        // GameClient is a singleton
+        for (Wall wall : GameClient.getInstance().getWalls()) {
+            if (rec.intersects(wall.getRectangle())) {
+                x = oldX;
+                y = oldY;
+                break;
+            }
+        }
+
+        // tank interact with enemyTanks
+        for (Tank tank : GameClient.getInstance().getEnemyTanks()) {
+            if (rec.intersects(tank.getRectangle())) {
+                x = oldX;
+                y = oldY;
+                break;
+            }
+        }
+
+        g.drawImage(this.getImage(), this.x, this.y, null);
     }
 
+    Rectangle getRectangle() {
+        return new Rectangle(x, y, getImage().getWidth(null), getImage().getHeight(null));
+    }
     // 每個鍵位方向的boolean use to determine the movement
     private boolean up, down, left, right;
 
-    public void keyPressed(KeyEvent e) {
+    void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP : up = true; break;
             case KeyEvent.VK_DOWN : down = true; break;
@@ -159,7 +167,7 @@ public class Tank {
         }
     }
 
-    public void keyReleased(KeyEvent e) {
+    void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP : up = false; break;
             case KeyEvent.VK_DOWN : down = false; break;

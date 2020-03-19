@@ -1,6 +1,6 @@
 package waynehsu.tankwar;
 
-public enum Direction {
+enum Direction {
     UP,
     DOWN,
     LEFT,
