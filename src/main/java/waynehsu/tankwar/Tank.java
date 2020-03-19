@@ -137,10 +137,17 @@ import java.awt.event.KeyEvent;
             case KeyEvent.VK_DOWN : down = true; break;
             case KeyEvent.VK_LEFT : left = true; break;
             case KeyEvent.VK_RIGHT : right = true; break;
+            case KeyEvent.VK_SPACE : fire(); break;
         }
     }
 
-    private boolean stopped;
+     private void fire() {
+        Missile missile = new Missile(x + getImage().getWidth(null) / 2 - 6,
+                y + getImage().getHeight(null) / 2 - 6, enemy, direction);
+        GameClient.getInstance().getMissiles().add(missile);    // 每fire一次加一個missile
+     }
+
+     private boolean stopped;
 
     private void determineDirection() {
         if (!up && !left && !down && !right) {
