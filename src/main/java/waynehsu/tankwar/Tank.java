@@ -1,9 +1,13 @@
 package waynehsu.tankwar;
 
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.File;
 
- class Tank {
+class Tank {
 
     private int x;
     private int y;
@@ -142,9 +146,14 @@ import java.awt.event.KeyEvent;
     }
 
      private void fire() {
-        Missile missile = new Missile(x + getImage().getWidth(null) / 2 - 6,
-                y + getImage().getHeight(null) / 2 - 6, enemy, direction);
-        GameClient.getInstance().getMissiles().add(missile);    // 每fire一次加一個missile
+         Missile missile = new Missile(x + getImage().getWidth(null) / 2 - 6,
+                 y + getImage().getHeight(null) / 2 - 6, enemy, direction);
+         GameClient.getInstance().getMissiles().add(missile);    // 每fire一次加一個missile
+
+         // import sound
+         Media sound = new Media(new File("assets/audios/shoot.wav").toURI().toString());
+         MediaPlayer mediaPlayer = new MediaPlayer(sound);
+         mediaPlayer.play();
      }
 
      private boolean stopped;
