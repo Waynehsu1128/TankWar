@@ -16,6 +16,30 @@ class Tank {
 
     private boolean enemy;
 
+    private boolean live = true;
+
+    private int hp = 100;
+
+    public int getHp() {
+        return hp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public boolean isLive() {
+        return live;
+    }
+
+    public void setLive(boolean live) {
+        this.live = live;
+    }
+
+    boolean isEnemy() {
+        return enemy;
+    }
+
     private Direction direction;
 
     public Tank(int x, int y, Direction direction) {
