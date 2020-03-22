@@ -91,11 +91,14 @@ public class GameClient extends JComponent {
         } else {
             g.setColor(Color.WHITE);
             g.setFont(new Font(null, Font.BOLD, 16));
-            g.drawString("Missiles:" + missiles.size(), 10, 50);
-            g.drawString("Explosions:" + explosions.size(), 10, 70);
-            g.drawString("Tank Hp:" + playerTank.getHp(), 10, 90);
-            g.drawString("Enemy Left:" + enemyTanks.size(), 10, 110);
-            g.drawString("Enemy Killed:" + enemyKilled.get(), 10, 130);
+            g.drawString("Missiles:" + missiles.size(), 10, 30);
+            g.drawString("Explosions:" + explosions.size(), 10, 50);
+            g.drawString("Tank Hp:" + playerTank.getHp(), 10, 70);
+            g.drawString("Enemy Left:" + enemyTanks.size(), 10, 90);
+            g.drawString("Enemy Killed:" + enemyKilled.get(), 10, 110);
+            g.drawImage(Tools.getImage("tree.png"), 720, 10, null);
+            g.drawImage(Tools.getImage("tree.png"), 10, 520, null);
+
             playerTank.draw(g);
 
             int count = enemyTanks.size();
