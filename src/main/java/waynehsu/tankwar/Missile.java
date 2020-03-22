@@ -15,7 +15,7 @@ class Missile {
         return live;
     }
 
-    void setLive(boolean live) {
+    private void setLive(boolean live) {
         this.live = live;
     }
 
@@ -55,7 +55,7 @@ class Missile {
         // 跟坦克發生碰撞 我方坦克與敵人的碰撞
         if (enemy) {
             Tank playerTank = GameClient.getInstance().getPlayerTank();
-            if (rec.intersects(playerTank.getRectangle())) {
+            if (rec.intersects(playerTank.getRectangleForHitDetection())) {
                 addExplosion();
                 playerTank.setHp(playerTank.getHp() - 20);
                 if (playerTank.getHp() <= 0) {
@@ -65,7 +65,7 @@ class Missile {
             }
         } else {
             for (Tank tank : GameClient.getInstance().getEnemyTanks()) {
-                if (rec.intersects(tank.getRectangle())) {
+                if (rec.intersects(tank.getRectangleForHitDetection())) {
                     addExplosion();
                     tank.setLive(false);
                     this.setLive(false);
