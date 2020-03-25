@@ -1,11 +1,17 @@
 package waynehsu.tankwar;
 
+import waynehsu.tankwar.Save.Position;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.file.DirectoryNotEmptyException;
+import java.util.List;
 import java.util.Random;
 
 class Tank {
+
+    Position getPosition() {
+        return new Position(x, y, direction);
+    }
 
     private static final int MOVE_SPEED = 5;
     private int x;
@@ -41,11 +47,15 @@ class Tank {
 
     private  Direction direction;
 
-    public Tank(int x, int y, Direction direction) {
+    Tank(int x, int y, Direction direction) {
         this(x, y, false, direction.DOWN);
     }
 
-    public Tank(int x, int y, boolean enemy, Direction direction) {
+    Tank(Position position, boolean enemy) {
+        this(position.getX(), position.getY(), enemy, position.getDirection());
+    }
+
+    Tank(int x, int y, boolean enemy, Direction direction) {
         this.x = x;
         this.y = y;
         this.enemy = enemy;
@@ -82,13 +92,13 @@ class Tank {
         // 對 x y 進行檢查 有沒有超出視窗
         if (x < 0) {
             x = 0;
-        } else if (x > (800 - getImage().getWidth(null))) {
-            x = 800 - getImage().getWidth(null);
+        } else if (x > (GameClient.WIDTH - getImage().getWidth(null))) {
+            x = GameClient.WIDTH - getImage().getWidth(null);
         }
         if (y < 0) {
             y = 0;
-        } else if (y > (600 - getImage().getHeight(null))) {
-            y = 600 - getImage().getHeight(null);
+        } else if (y > (GameClient.HEIGHT - getImage().getHeight(null))) {
+            y = GameClient.HEIGHT - getImage().getHeight(null);
         }
 
         // tank interact with wall
@@ -240,5 +250,9 @@ class Tank {
             }
         }
         step--;
+    }
+
+    boolean isCollidedWith (Tank playerTank) {
+        return this.getRectangle().intersects(playerTank.getRectangleForHitDetection());
     }
 }

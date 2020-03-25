@@ -1,18 +1,31 @@
 package waynehsu.tankwar;
 
+import com.alibaba.fastjson.JSON;
+import javafx.geometry.Pos;
+import org.apache.commons.io.FileUtils;
+import waynehsu.tankwar.Save.Position;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class GameClient extends JComponent {
 
+    static final int WIDTH = 800, HEIGHT = 600;
     // singleton
     private static final GameClient INSTANCE = new GameClient();
+
+    private static final String GAME_SAV = "game.sav";
+
     static GameClient getInstance() {
         return INSTANCE;
     }
@@ -71,7 +84,7 @@ public class GameClient extends JComponent {
                 new Wall(700, 160, false, 12)
         );
         this.initEnemyTanks();
-        this.setPreferredSize(new Dimension(800, 600));
+        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
     }
 
     private void initEnemyTanks() {
@@ -79,7 +92,11 @@ public class GameClient extends JComponent {
         this.enemyTanks = new CopyOnWriteArrayList<>();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 4; j++) {
-                this.enemyTanks.add(new Tank(200 + j * 120, 400 + 40 * i, true, Direction.UP));
+                Tank enemyTank = new Tank(200 + j * 120, 400 + 40 * i, true, Direction.UP);
+                if (enemyTank.isCollidedWith(playerTank)) {
+                    continue;
+                }
+                this.enemyTanks.add(enemyTank);
             }
         }
     }
@@ -90,7 +107,7 @@ public class GameClient extends JComponent {
     @Override
     public void paintComponent(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, 800, 600);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
         if (!playerTank.isLive()) {
             g.setColor(Color.RED);
             g.setFont(new Font(null, Font.BOLD, 100));
@@ -149,9 +166,22 @@ public class GameClient extends JComponent {
         frame.setTitle("Tank War");
         frame.setIconImage(new ImageIcon("assets/images/icon.png").getImage());
         final GameClient client = GameClient.getInstance();
-        client.repaint();
         frame.add(client);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  // stop運行when closed
+        // save
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    client.save();
+                    System.exit(0);
+                } catch (IOException ex) {  //  如果確實有異常,給用戶報警
+                    JOptionPane.showMessageDialog(null, "Failed to save current game!",
+                            "Oops! Error Occurred",JOptionPane.ERROR_MESSAGE);
+                    System.exit(4);
+                }
+            }
+        });
+        //frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  // stop運行when closed
         frame.pack();   //  讓窗口fit preferred size
         frame.addKeyListener(new KeyAdapter() { //對按鍵的響應
             @Override
@@ -167,6 +197,12 @@ public class GameClient extends JComponent {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
+        try {
+            client.load();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Failed to load previous game!",
+                    "Oops! Error Occurred",JOptionPane.ERROR_MESSAGE);
+        }
         //noinspection InfiniteLoopStatement
         while (true) {
             try {
@@ -183,6 +219,41 @@ public class GameClient extends JComponent {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void load() throws IOException {
+        File file = new File(GAME_SAV);
+        if (file.exists() && file.isFile()) {
+            String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            Save save = JSON.parseObject(json, Save.class);
+            if (save.isGameContinued()) {   //如果遊戲還繼續的話
+                this.playerTank = new Tank(save.getPlayerPosition(), false);
+                this.enemyTanks.clear();
+                List<Position> enemyPositions = save.getEnemyPositions();
+                if (enemyPositions != null && !enemyPositions.isEmpty()) {
+                    for (Position position : enemyPositions) {
+                        this.enemyTanks.add(new Tank(position, true));
+                    }
+                }
+            }
+        }
+    }
+
+    void save(String destination) throws IOException {
+        Save save = new Save(playerTank.isLive(), playerTank.getPosition(),
+                enemyTanks.stream().filter(Tank::isLive)    // 滿足isLive()的條件 (using method reference)
+                        .map(Tank::getPosition)            // 轉換成Position(using method reference)
+                        .collect(Collectors.toList()));         // 轉成一個list
+//        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(destination)))) {
+//            out.println(JSON.toJSONString(save, true));
+//        } // 沒有建立一個destination的文件夾所以會報錯
+        // use commons io tool
+        FileUtils.write(new File(destination), JSON.toJSONString(save, true),
+                StandardCharsets.UTF_8);
+    }
+
+    void save() throws IOException {
+        this.save(GAME_SAV);
     }
 
     void restart() {
